@@ -19,38 +19,34 @@ impl Local {
 
 #[async_trait]
 impl Storage for Local {
-    async fn upload(
-        &self,
-        file_name: &str,
-        file_bytes: Bytes,
-    ) -> Result<UploadFileData, StorageError> {
-        let path = std::path::Path::new(&self.file_path).join(file_name.replace("../", ""));
+    async fn upload(&self, key: &str, bytes: Bytes) -> Result<UploadFileData, StorageError> {
+        let path = std::path::Path::new(&self.file_path).join(key.replace("../", ""));
         std::fs::create_dir_all(path.parent().ok_or(StorageError::InvalidFilename)?)?;
-        let content_sha512 = format!("{:x}", sha2::Sha512::digest(&file_bytes));
+        let content_sha512 = format!("{:x}", sha2::Sha512::digest(&bytes));
 
-        std::fs::write(path, &*file_bytes)?;
+        std::fs::write(path, &*bytes)?;
         Ok(UploadFileData {
-            file_name: file_name.to_string(),
-            content_length: file_bytes.len() as u32,
+            file_name: key.to_string(),
+            content_length: bytes.len() as u32,
             content_sha512,
             timestamp: Utc::now().timestamp() as u64,
         })
     }
 
-    async fn delete(&self, file_name: &str) -> Result<(), StorageError> {
-        let path = std::path::Path::new(&self.file_path).join(file_name.replace("../", ""));
+    async fn delete(&self, key: &str) -> Result<(), StorageError> {
+        let path = std::path::Path::new(&self.file_path).join(key.replace("../", ""));
         std::fs::remove_file(path)?;
 
         Ok(())
     }
 
-    async fn get(&self, file_name: &str) -> Result<Bytes, StorageError> {
-        let path = std::path::Path::new(&self.file_path).join(file_name.replace("../", ""));
+    async fn get(&self, key: &str) -> Result<Bytes, StorageError> {
+        let path = std::path::Path::new(&self.file_path).join(key.replace("../", ""));
         Ok(Bytes::from(std::fs::read(path)?))
     }
 
-    async fn exists(&self, file_name: &str) -> bool {
-        let path = std::path::Path::new(&self.file_path).join(file_name.replace("../", ""));
+    async fn exists(&self, key: &str) -> bool {
+        let path = std::path::Path::new(&self.file_path).join(key.replace("../", ""));
         path.exists()
     }
 }

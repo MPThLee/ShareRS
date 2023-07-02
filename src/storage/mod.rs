@@ -34,9 +34,9 @@ pub trait Storage {
         file_bytes: Bytes,
     ) -> Result<UploadFileData, StorageError>;
 
-    async fn delete(&self, file_name: &str) -> Result<(), StorageError>;
+    async fn delete(&self, key: &str) -> Result<(), StorageError>;
 
-    async fn get(&self, file_name: &str) -> Result<Bytes, StorageError>;
+    async fn get(&self, key: &str) -> Result<Bytes, StorageError>;
 
-    async fn exists(&self, file_name: &str) -> bool;
+    async fn exists(&self, key: &str) -> bool;
 }

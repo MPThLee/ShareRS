@@ -45,45 +45,41 @@ impl S3 {
 
 #[async_trait]
 impl Storage for S3 {
-    async fn upload(
-        &self,
-        file_name: &str,
-        file_bytes: Bytes,
-    ) -> Result<UploadFileData, StorageError> {
-        let content_sha512 = format!("{:x}", sha2::Sha512::digest(&file_bytes));
+    async fn upload(&self, key: &str, bytes: Bytes) -> Result<UploadFileData, StorageError> {
+        let content_sha512 = format!("{:x}", sha2::Sha512::digest(&bytes));
 
         self.bucket
-            .put_object(file_name, &file_bytes)
+            .put_object(key, &bytes)
             .await
             .map_err(|_| StorageError::S3Error("Error while uploading file to S3".to_string()))?;
 
         Ok(UploadFileData {
-            file_name: file_name.to_string(),
-            content_length: file_bytes.len() as u32,
+            file_name: key.to_string(),
+            content_length: bytes.len() as u32,
             content_sha512,
             timestamp: Utc::now().timestamp() as u64,
         })
     }
 
-    async fn delete(&self, file_name: &str) -> Result<(), StorageError> {
+    async fn delete(&self, key: &str) -> Result<(), StorageError> {
         self.bucket
-            .delete_object(&file_name)
+            .delete_object(&key)
             .await
             .map_err(|_| StorageError::S3Error("Error while deleting file on S3".to_string()))?;
 
         Ok(())
     }
 
-    async fn get(&self, file_name: &str) -> Result<Bytes, StorageError> {
+    async fn get(&self, key: &str) -> Result<Bytes, StorageError> {
         let file = self
             .bucket
-            .get_object(&file_name)
+            .get_object(&key)
             .await
             .map_err(|_| StorageError::S3Error("Error while get file from S3".to_string()))?;
         Ok(file.bytes().clone())
     }
 
-    async fn exists(&self, file_name: &str) -> bool {
-        self.bucket.head_object(file_name).await.is_ok()
+    async fn exists(&self, key: &str) -> bool {
+        self.bucket.head_object(key).await.is_ok()
     }
 }
