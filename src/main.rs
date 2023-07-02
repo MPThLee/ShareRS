@@ -1,13 +1,27 @@
 use std::sync::Arc;
 
-use actix_web::{web, App, HttpServer};
+use axum::{routing::get, Extension, Router};
+use routes::get_hash;
+
+use tower_http::trace::{self, TraceLayer};
+use tracing::Level;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod routes;
 mod storage;
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() {
+    // Initialize dotenv
     dotenvy::dotenv().ok();
+
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "sharers=debug,tower_http=debug,axum::rejection=trace".into()),
+        )
+        .with(tracing_subscriber::fmt::layer().with_target(true).compact())
+        .init();
 
     let storage_backend =
         dotenvy::var("SHARERS_STORAGE_BACKEND").unwrap_or_else(|_| "local".to_string());
@@ -23,18 +37,24 @@ async fn main() -> std::io::Result<()> {
             .unwrap(),
         ),
         "local" => Arc::new(storage::Local::new(
-            &dotenvy::var("SHARERS_LOCAL_FILE_PATH").unwrap(),
+            dotenvy::var("SHARERS_LOCAL_FILE_PATH").unwrap(),
         )),
         _ => panic!("Invalid storage backend specified. Aborting startup!"),
     };
 
-    HttpServer::new(move || {
-        App::new()
-            .wrap(actix_web::middleware::Compress::default())
-            .app_data(web::Data::new(storage.clone()))
-            .default_service(web::get().to(routes::get_hash))
-    })
-    .bind(dotenvy::var("SHARERS_BIND_ADDR").unwrap())?
-    .run()
-    .await
+    let app = Router::new()
+        .route("/*hash", get(get_hash))
+        .layer(Extension(storage))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
+        );
+
+    let addr = dotenvy::var("SHARERS_BIND_ADDR").unwrap();
+    tracing::debug!("listening on {}", addr);
+    axum::Server::bind(&addr.parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }

@@ -5,8 +5,8 @@ use thiserror::Error;
 mod local;
 mod s3;
 
-pub use local::Local;
 pub use self::s3::S3;
+pub use local::Local;
 
 #[derive(Error, Debug)]
 pub enum StorageError {

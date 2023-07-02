@@ -29,7 +29,7 @@ impl S3 {
                 }
             } else {
                 Region::Custom {
-                    region: region,
+                    region,
                     endpoint: url.into(),
                 }
             },
@@ -75,10 +75,11 @@ impl Storage for S3 {
     }
 
     async fn get(&self, file_name: &str) -> Result<Bytes, StorageError> {
-        let file =
-            self.bucket.get_object(&file_name).await.map_err(|_| {
-                StorageError::S3Error("Error while get file from S3".to_string())
-            })?;
+        let file = self
+            .bucket
+            .get_object(&file_name)
+            .await
+            .map_err(|_| StorageError::S3Error("Error while get file from S3".to_string()))?;
         Ok(file.bytes().clone())
     }
 
