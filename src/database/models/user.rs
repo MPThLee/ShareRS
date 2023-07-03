@@ -24,6 +24,7 @@ pub struct UserAuth {
     pub password: String,
 }
 
+#[allow(dead_code)]
 impl User {
     pub async fn insert(
         user: UserAuth,

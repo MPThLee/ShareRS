@@ -28,6 +28,7 @@ pub struct FileDbRequest {
     pub user_id: UserId,
 }
 
+#[allow(dead_code)]
 impl File {
     pub async fn insert(
         file: FileDbRequest,

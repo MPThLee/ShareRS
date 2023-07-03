@@ -14,6 +14,7 @@ pub use user::User;
 
 use crate::modules::password::PasswordError;
 
+#[allow(dead_code)]
 #[derive(Error, Debug)]
 pub enum DatabaseError {
     #[error("Error while interacting with the database: {0}")]

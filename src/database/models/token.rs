@@ -21,6 +21,7 @@ pub struct TokenRequest {
     pub expires: Option<DateTime<Utc>>,
 }
 
+#[allow(dead_code)]
 impl Token {
     pub async fn insert(
         token: TokenRequest,

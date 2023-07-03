@@ -26,6 +26,7 @@ pub struct UrlRequest {
     pub user_id: UserId,
 }
 
+#[allow(dead_code)]
 impl Url {
     pub async fn insert(
         url: UrlRequest,

@@ -3,6 +3,7 @@ use thiserror::Error;
 use argon2::password_hash::SaltString;
 use argon2::{password_hash, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 
+#[allow(dead_code)]
 #[derive(Error, Debug)]
 pub enum PasswordError {
     #[error("Password encode failed")]
@@ -13,6 +14,7 @@ pub enum PasswordError {
     InvalidHash(String),
 }
 
+#[allow(dead_code)]
 pub async fn hash(password: String) -> Result<String, PasswordError> {
     let salt = SaltString::generate(rand::thread_rng());
     Ok(Argon2::default()
@@ -21,6 +23,7 @@ pub async fn hash(password: String) -> Result<String, PasswordError> {
         .to_string())
 }
 
+#[allow(dead_code)]
 pub async fn verify(password: String, hash: String) -> Result<bool, PasswordError> {
     let hash = PasswordHash::new(&hash).map_err(|e| PasswordError::InvalidHash(e.to_string()))?;
 
