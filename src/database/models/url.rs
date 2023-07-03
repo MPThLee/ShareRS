@@ -51,12 +51,10 @@ impl Url {
         Ok(())
     }
 
-    pub async fn get_by_name<'a, E>(
-        name: String,
-        executor: E,
-    ) -> Result<Option<Self>, DatabaseError>
+    pub async fn get_by_name<'a, E, S>(name: S, executor: E) -> Result<Option<Self>, DatabaseError>
     where
         E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
+        S: Into<String>,
     {
         let result = sqlx::query!(
             "
@@ -66,9 +64,14 @@ impl Url {
             FROM 
                 url u
             WHERE 
-                u.name = $1
+                    u.name = $1
+                AND (
+                        u.max_views IS NULL
+                    OR
+                        u.views < COALESCE(u.max_views, '9223372036854775807'::bigint)
+                )
             ",
-            &name
+            &name.into()
         )
         .fetch_optional(executor)
         .await?;
@@ -88,7 +91,30 @@ impl Url {
         }
     }
 
-    pub async fn get_many_by_user_id<'a, E>(user_id: UserId, exec: E) -> Result<Vec<Self>, DatabaseError>
+    pub async fn increase_views<'a, E>(url_id: UrlId, executor: E) -> Result<(), DatabaseError>
+    where
+        E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
+    {
+        sqlx::query!(
+            "
+            UPDATE url
+            SET
+                views = views + 1
+            WHERE
+                id = $1
+            ",
+            &url_id.0
+        )
+        .execute(executor)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn get_many_by_user_id<'a, E>(
+        user_id: UserId,
+        exec: E,
+    ) -> Result<Vec<Self>, DatabaseError>
     where
         E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     {

@@ -22,8 +22,7 @@ pub async fn hash(password: String) -> Result<String, PasswordError> {
 }
 
 pub async fn verify(password: String, hash: String) -> Result<bool, PasswordError> {
-    let hash =
-        PasswordHash::new(&hash).map_err(|e| PasswordError::InvalidHash(e.to_string()))?;
+    let hash = PasswordHash::new(&hash).map_err(|e| PasswordError::InvalidHash(e.to_string()))?;
 
     let res = Argon2::default().verify_password(password.as_bytes(), &hash);
 

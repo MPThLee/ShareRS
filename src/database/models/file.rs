@@ -54,12 +54,10 @@ impl File {
         Ok(())
     }
 
-    pub async fn get_by_name<'a, E>(
-        name: String,
-        executor: E,
-    ) -> Result<Option<Self>, DatabaseError>
+    pub async fn get_by_name<'a, E, S>(name: S, executor: E) -> Result<Option<Self>, DatabaseError>
     where
         E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
+        S: Into<String>,
     {
         let result = sqlx::query!(
             "
@@ -69,9 +67,14 @@ impl File {
             FROM 
                 files f
             WHERE 
-                f.name = $1
+                    f.name = $1
+                AND (
+                    f.max_views IS NULL
+                OR
+                    f.views < COALESCE(f.max_views, '9223372036854775807'::bigint)
+                )
             ",
-            &name
+            &name.into()
         )
         .fetch_optional(executor)
         .await?;
@@ -92,7 +95,10 @@ impl File {
         }
     }
 
-    pub async fn get_many_by_user_id<'a, E>(user_id: UserId, exec: E) -> Result<Vec<Self>, DatabaseError>
+    pub async fn get_many_by_user_id<'a, E>(
+        user_id: UserId,
+        exec: E,
+    ) -> Result<Vec<Self>, DatabaseError>
     where
         E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     {
@@ -176,4 +182,3 @@ impl File {
         Ok(files)
     }
 }
-

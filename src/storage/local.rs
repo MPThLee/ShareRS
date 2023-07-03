@@ -1,7 +1,9 @@
 use async_trait::async_trait;
 use bytes::Bytes;
 use chrono::Utc;
+use futures::Stream;
 use sha2::Digest;
+use tokio::io::AsyncReadExt;
 
 use super::{Storage, StorageError, UploadFileData};
 
@@ -21,10 +23,11 @@ impl Local {
 impl Storage for Local {
     async fn upload(&self, key: &str, bytes: Bytes) -> Result<UploadFileData, StorageError> {
         let path = std::path::Path::new(&self.file_path).join(key.replace("../", ""));
-        std::fs::create_dir_all(path.parent().ok_or(StorageError::InvalidFilename)?)?;
+        let create = tokio::fs::create_dir_all(path.parent().ok_or(StorageError::InvalidFilename)?);
         let content_sha512 = format!("{:x}", sha2::Sha512::digest(&bytes));
 
-        std::fs::write(path, &*bytes)?;
+        create.await?;
+        tokio::fs::write(path, &*bytes).await?;
         Ok(UploadFileData {
             file_name: key.to_string(),
             content_length: bytes.len() as u32,
