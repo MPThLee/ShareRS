@@ -36,6 +36,7 @@ pub async fn get_hash(
                     }
                 };
 
+                tokio::spawn(async move { File::increase_views(file.id, &pool).await });
                 (
                     [
                         (
@@ -50,7 +51,7 @@ pub async fn get_hash(
                             ),
                         ),
                     ],
-                    bytes.to_vec(),
+                    bytes,
                 )
                     .into_response()
             } else {

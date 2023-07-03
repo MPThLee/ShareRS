@@ -138,6 +138,26 @@ impl File {
         Ok(files)
     }
 
+    pub async fn increase_views<'a, E>(file_id: FileId, executor: E) -> Result<(), DatabaseError>
+    where
+        E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
+    {
+        sqlx::query!(
+            "
+            UPDATE files
+            SET
+                views = views + 1
+            WHERE
+                id = $1
+            ",
+            &file_id.0
+        )
+        .execute(executor)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn get<'a, 'b, E>(id: FileId, executor: E) -> Result<Option<Self>, DatabaseError>
     where
         E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
