@@ -14,7 +14,7 @@ use axum::{
 };
 use sqlx::PgPool;
 use std::path::Path as StdPath;
-use tracing::debug;
+use tracing::{debug, error};
 
 pub async fn get_hash(
     Path(hash): Path<String>,
@@ -30,7 +30,8 @@ pub async fn get_hash(
                 let bytes = match storage.get(&file.id.0.to_string()).await {
                     Ok(file) => file,
                     Err(err) => {
-                        return (StatusCode::NOT_FOUND, format!("File not found: {}", err))
+                        error!("File not found while DB has an file hash '{}': {} / {:?}", hash, err, file);
+                        return (StatusCode::NOT_FOUND, format!("Not found"))
                             .into_response()
                     }
                 };
