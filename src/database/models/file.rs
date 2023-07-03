@@ -33,8 +33,8 @@ impl File {
     pub async fn insert(
         file: FileDbRequest,
         transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    ) -> Result<(), DatabaseError> {
-        sqlx::query!(
+    ) -> Result<FileId, DatabaseError> {
+        let ret = sqlx::query!(
             "
             INSERT INTO files (
                 name, original_name, mime, max_views, user_id
@@ -42,6 +42,8 @@ impl File {
             VALUES (
                 $1, $2, $3, $4, $5
             )
+            RETURNING
+                id
             ",
             file.name,
             file.original_name,
@@ -49,10 +51,10 @@ impl File {
             file.max_views,
             file.user_id.0
         )
-        .execute(&mut *transaction)
+        .fetch_one(&mut *transaction)
         .await?;
 
-        Ok(())
+        Ok(FileId(ret.id))
     }
 
     pub async fn get_by_name<'a, E, S>(name: S, executor: E) -> Result<Option<Self>, DatabaseError>

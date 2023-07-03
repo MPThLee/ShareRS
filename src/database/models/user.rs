@@ -29,9 +29,9 @@ impl User {
     pub async fn insert(
         user: UserAuth,
         transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    ) -> Result<(), DatabaseError> {
+    ) -> Result<UserId, DatabaseError> {
         let password_hash = crate::modules::password::hash(user.password).await?;
-        sqlx::query!(
+        let ret = sqlx::query!(
             "
             INSERT INTO users (
                 username, password
@@ -39,14 +39,16 @@ impl User {
             VALUES (
                 $1, $2
             )
+            RETURNING
+                id
             ",
             user.username,
             password_hash
         )
-        .execute(&mut *transaction)
+        .fetch_one(&mut *transaction)
         .await?;
 
-        Ok(())
+        Ok(UserId(ret.id))
     }
 
     pub async fn get_by_username<'a, E>(

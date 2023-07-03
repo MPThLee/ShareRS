@@ -26,8 +26,8 @@ impl Token {
     pub async fn insert(
         token: TokenRequest,
         transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    ) -> Result<(), DatabaseError> {
-        sqlx::query!(
+    ) -> Result<TokenId, DatabaseError> {
+        let ret = sqlx::query!(
             "
             INSERT INTO token (
                 user_id, expires
@@ -35,14 +35,16 @@ impl Token {
             VALUES (
                 $1, $2
             )
+            RETURNING
+                id
             ",
             token.user_id.0,
             token.expires
         )
-        .execute(&mut *transaction)
+        .fetch_one(&mut *transaction)
         .await?;
 
-        Ok(())
+        Ok(TokenId(ret.id))
     }
 
     pub async fn get_many_by_user_id<'a, E>(

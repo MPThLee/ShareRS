@@ -31,8 +31,8 @@ impl Url {
     pub async fn insert(
         url: UrlRequest,
         transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    ) -> Result<(), DatabaseError> {
-        sqlx::query!(
+    ) -> Result<UrlId, DatabaseError> {
+        let ret = sqlx::query!(
             "
             INSERT INTO url (
                 name, destination, max_views, user_id
@@ -40,16 +40,18 @@ impl Url {
             VALUES (
                 $1, $2, $3, $4
             )
+            RETURNING
+                id
             ",
             url.name,
             url.destination,
             url.max_views,
             url.user_id.0
         )
-        .execute(&mut *transaction)
+        .fetch_one(&mut *transaction)
         .await?;
 
-        Ok(())
+        Ok(UrlId(ret.id))
     }
 
     pub async fn get_by_name<'a, E, S>(name: S, executor: E) -> Result<Option<Self>, DatabaseError>
