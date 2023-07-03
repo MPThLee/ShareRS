@@ -47,6 +47,41 @@ impl Token {
         Ok(TokenId(ret.id))
     }
 
+    pub async fn get_valid_by_id<'a, E>(
+        token_id: TokenId,
+        executor: E,
+    ) -> Result<Option<Self>, DatabaseError>
+    where
+        E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
+    {
+        let result = sqlx::query!(
+            "
+            SELECT 
+                t.id, t.user_id, t.expires, t.created_at
+            FROM 
+                token t
+            WHERE 
+                    t.id = $1
+                AND 
+                    CURRENT_TIMESTAMP < COALESCE(t.expires, 'infinity')
+            ",
+            &token_id.0
+        )
+        .fetch_optional(executor)
+        .await?;
+
+        if let Some(row) = result {
+            Ok(Some(Token {
+                id: TokenId(row.id),
+                user_id: UserId(row.user_id),
+                expires: row.expires,
+                created_at: row.created_at,
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
     pub async fn get_many_by_user_id<'a, E>(
         user_id: UserId,
         exec: E,
@@ -82,7 +117,7 @@ impl Token {
         Ok(tokens)
     }
 
-    pub async fn get<'a, 'b, E>(id: UrlId, executor: E) -> Result<Option<Self>, DatabaseError>
+    pub async fn get<'a, 'b, E>(id: TokenId, executor: E) -> Result<Option<Self>, DatabaseError>
     where
         E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     {
@@ -91,7 +126,7 @@ impl Token {
             .map(|x| x.into_iter().next())
     }
 
-    pub async fn get_many<'a, E>(token_ids: &[UrlId], exec: E) -> Result<Vec<Self>, DatabaseError>
+    pub async fn get_many<'a, E>(token_ids: &[TokenId], exec: E) -> Result<Vec<Self>, DatabaseError>
     where
         E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     {

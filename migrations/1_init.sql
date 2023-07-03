@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS files (
     "mime" TEXT,
     "views" BIGINT NOT NULL DEFAULT 0,
     "max_views" BIGINT,
+    "is_processing" BOOLEAN NOT NULL DEFAULT true,
     "user_id" UUID NOT NULL REFERENCES users("id"),
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

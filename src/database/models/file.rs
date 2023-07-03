@@ -14,6 +14,7 @@ pub struct File {
     pub mime: Option<String>,
     pub views: i64,
     pub max_views: Option<i64>,
+    pub is_processing: bool,
     pub user_id: UserId,
     pub created_at: DateTime<Utc>,
 }
@@ -66,11 +67,13 @@ impl File {
             "
             SELECT 
                 f.id, f.name, f.original_name, f.mime, f.views,
-                f.max_views, f.user_id, f.created_at
+                f.max_views, f.is_processing, f.user_id, f.created_at
             FROM 
                 files f
             WHERE 
                     f.name = $1
+                AND
+                    f.is_processing = false
                 AND (
                     f.max_views IS NULL
                 OR
@@ -90,6 +93,7 @@ impl File {
                 mime: row.mime,
                 views: row.views,
                 max_views: row.max_views,
+                is_processing: row.is_processing,
                 user_id: UserId(row.user_id),
                 created_at: row.created_at,
             }))
@@ -111,7 +115,7 @@ impl File {
             "
             SELECT 
                 f.id, f.name, f.original_name, f.mime, f.views,
-                f.max_views, f.user_id, f.created_at
+                f.max_views, f.is_processing, f.user_id, f.created_at
             FROM 
                 files f
             WHERE 
@@ -128,6 +132,7 @@ impl File {
                 mime: f.mime,
                 views: f.views,
                 max_views: f.max_views,
+                is_processing: f.is_processing,
                 user_id: UserId(f.user_id),
                 created_at: f.created_at,
             }))
@@ -151,6 +156,27 @@ impl File {
                 id = $1
             ",
             &file_id.0
+        )
+        .execute(executor)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn update_processing<'a, E>(file_id: FileId, value: bool, executor: E) -> Result<(), DatabaseError>
+    where
+        E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
+    {
+        sqlx::query!(
+            "
+            UPDATE files
+            SET
+                is_processing = $1
+            WHERE
+                id = $2
+            ",
+            value,
+            &file_id.0,
         )
         .execute(executor)
         .await?;
@@ -202,7 +228,7 @@ impl File {
             "
             SELECT 
                 f.id, f.name, f.original_name, f.mime, f.views,
-                f.max_views, f.user_id, f.created_at
+                f.max_views, f.is_processing, f.user_id, f.created_at
             FROM 
                 files f
             WHERE 
@@ -219,6 +245,7 @@ impl File {
                 mime: f.mime,
                 views: f.views,
                 max_views: f.max_views,
+                is_processing: f.is_processing,
                 user_id: UserId(f.user_id),
                 created_at: f.created_at,
             }))
