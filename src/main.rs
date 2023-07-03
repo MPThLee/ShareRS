@@ -9,6 +9,7 @@ use tracing::Level;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod database;
+mod modules;
 mod routes;
 mod storage;
 
