@@ -46,7 +46,11 @@ pub fn default_context() -> TeraContext {
     use crate::built_info;
     let mut context = TeraContext::new();
     context.insert("version", built_info::PKG_VERSION);
-    context.insert("built_time", built_info::BUILT_TIME_UTC);
+
+    let built_time = chrono::DateTime::parse_from_rfc2822(built_info::BUILT_TIME_UTC)
+        .unwrap()
+        .with_timezone(&chrono::offset::Utc);
+    context.insert("built_time", &built_time.to_rfc3339());
 
     context.insert(
         "git_version",
