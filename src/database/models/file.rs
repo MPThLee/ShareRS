@@ -158,6 +158,30 @@ impl File {
         Ok(())
     }
 
+    pub async fn get_count<'a, 'b, E>(executor: E) -> Result<i64, DatabaseError>
+    where
+        E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
+    {
+        let ret = sqlx::query!(
+            "
+            SELECT 
+                COUNT(*)
+            FROM
+                files
+            " // "
+              // SELECT reltuples::bigint AS count
+              // FROM pg_class
+              // WHERE oid = 'public.files'::regclass;
+              // "
+        )
+        .fetch_one(executor)
+        .await?;
+
+        ret.count.ok_or(DatabaseError::Other(
+            "Unknown error while get count".to_string(),
+        ))
+    }
+
     pub async fn get<'a, 'b, E>(id: FileId, executor: E) -> Result<Option<Self>, DatabaseError>
     where
         E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,

@@ -2,16 +2,24 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use axum::{routing::get, Extension, Router};
-use routes::get_hash;
+use routes::{get_hash, index};
 
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+use crate::modules::template::init_template;
+
 mod database;
 mod modules;
 mod routes;
 mod storage;
+
+// Use of a mod or pub mod is not actually necessary.
+pub(crate) mod built_info {
+    // The file has been placed there by the build script.
+    include!(concat!(env!("OUT_DIR"), "/built.rs"));
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -50,9 +58,14 @@ async fn main() -> anyhow::Result<()> {
         _ => panic!("Invalid storage backend specified. Aborting startup!"),
     };
 
+    // Template
+    let template = init_template()?;
+
     // App handler
     let app = Router::new()
+        .route("/", get(index))
         .route("/*hash", get(get_hash))
+        .layer(Extension(template))
         .layer(Extension(storage))
         .layer(Extension(pool))
         .layer(
