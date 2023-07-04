@@ -64,8 +64,8 @@ pub fn init_template() -> anyhow::Result<Tera> {
 pub fn default_context() -> TeraContext {
     let mut context = TeraContext::new();
     context.insert("version", built_info::PKG_VERSION);
-    context.insert("built_time", &BUILD_TIME_UTC_RFC3339.to_string());
-    context.insert("git_version", &GIT_DIRTY_VERSION.to_string());
+    context.insert("built_time", BUILD_TIME_UTC_RFC3339.as_str());
+    context.insert("git_version", GIT_DIRTY_VERSION.as_str());
 
     context
 }

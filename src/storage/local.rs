@@ -19,7 +19,7 @@ impl Local {
 
 #[async_trait]
 impl Storage for Local {
-    async fn upload(&self, key: &str, bytes: Bytes) -> Result<UploadFileData, StorageError> {
+    async fn put(&self, key: &str, bytes: Bytes) -> Result<UploadFileData, StorageError> {
         let path = std::path::Path::new(&self.file_path).join(key.replace("../", ""));
         let create = tokio::fs::create_dir_all(path.parent().ok_or(StorageError::InvalidFilename)?);
         let content_sha512 = format!("{:x}", sha2::Sha512::digest(&bytes));

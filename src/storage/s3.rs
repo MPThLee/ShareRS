@@ -45,7 +45,7 @@ impl S3 {
 
 #[async_trait]
 impl Storage for S3 {
-    async fn upload(&self, key: &str, bytes: Bytes) -> Result<UploadFileData, StorageError> {
+    async fn put(&self, key: &str, bytes: Bytes) -> Result<UploadFileData, StorageError> {
         let content_sha512 = format!("{:x}", sha2::Sha512::digest(&bytes));
 
         self.bucket
