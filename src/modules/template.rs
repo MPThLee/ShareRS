@@ -1,4 +1,6 @@
+use crate::built_info;
 use anyhow::{anyhow, Context, Result};
+use lazy_static::lazy_static;
 use tera::{Context as TeraContext, Tera};
 
 static INDEX: &str = r#"<!doctype html>
@@ -12,6 +14,23 @@ static INDEX: &str = r#"<!doctype html>
   <p>Currently storing {{total_files}} files and {{total_urls}} urls.</p>
 </body>
 </html>"#;
+
+lazy_static! {
+    static ref BUILD_TIME_UTC_RFC3339: String =
+        chrono::DateTime::parse_from_rfc2822(built_info::BUILT_TIME_UTC)
+            .unwrap()
+            .with_timezone(&chrono::offset::Utc)
+            .to_rfc3339();
+    static ref GIT_DIRTY_VERSION: String = format!(
+        "{}{}",
+        built_info::GIT_VERSION.unwrap_or("unknown"),
+        if built_info::GIT_DIRTY.unwrap_or(false) {
+            "+"
+        } else {
+            ""
+        }
+    );
+}
 
 pub fn init_template() -> anyhow::Result<Tera> {
     let mut tera = Tera::default();
@@ -43,27 +62,10 @@ pub fn init_template() -> anyhow::Result<Tera> {
 }
 
 pub fn default_context() -> TeraContext {
-    use crate::built_info;
     let mut context = TeraContext::new();
     context.insert("version", built_info::PKG_VERSION);
-
-    let built_time = chrono::DateTime::parse_from_rfc2822(built_info::BUILT_TIME_UTC)
-        .unwrap()
-        .with_timezone(&chrono::offset::Utc);
-    context.insert("built_time", &built_time.to_rfc3339());
-
-    context.insert(
-        "git_version",
-        &format!(
-            "{}{}",
-            built_info::GIT_VERSION.unwrap_or("unknown"),
-            if built_info::GIT_DIRTY.unwrap_or(false) {
-                "+"
-            } else {
-                ""
-            }
-        ),
-    );
+    context.insert("built_time", &BUILD_TIME_UTC_RFC3339.to_string());
+    context.insert("git_version", &GIT_DIRTY_VERSION.to_string());
 
     context
 }

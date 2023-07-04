@@ -163,7 +163,11 @@ impl File {
         Ok(())
     }
 
-    pub async fn update_processing<'a, E>(file_id: FileId, value: bool, executor: E) -> Result<(), DatabaseError>
+    pub async fn update_processing<'a, E>(
+        file_id: FileId,
+        value: bool,
+        executor: E,
+    ) -> Result<(), DatabaseError>
     where
         E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     {

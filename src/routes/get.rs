@@ -2,9 +2,10 @@ use std::sync::Arc;
 
 use crate::{
     database::models::{File, Url},
-    modules::template::default_context,
+    modules::{mime::get_mime, template::default_context},
     storage::Storage,
 };
+
 use axum::{
     extract::Path,
     http::{header, StatusCode},
@@ -15,6 +16,8 @@ use sqlx::PgPool;
 use std::path::Path as StdPath;
 use tera::Tera;
 use tracing::{debug, error};
+
+static SOFTBLOCK_LIST: &[&str] = &["text/javascript", "text/html"];
 
 pub async fn get_hash(
     Path(hash): Path<String>,
@@ -39,23 +42,30 @@ pub async fn get_hash(
                 };
 
                 tokio::spawn(async move { File::increase_views(file.id, &pool).await });
-                (
-                    [
-                        (
-                            header::CONTENT_TYPE,
-                            file.mime.unwrap_or("application/octet-stream".to_string()),
-                        ),
-                        (
-                            header::CONTENT_DISPOSITION,
-                            format!(
-                                "attachment; filename=\"{}\"",
-                                file.original_name.unwrap_or(file.name)
+                let filemime = get_mime(&bytes.slice(0..10));
+                let mime = file.mime.unwrap_or(filemime.mime_type().to_string());
+                if SOFTBLOCK_LIST.contains(&mime.as_str()) {
+                    debug!(
+                        "File Hash '{}' is on softblock list. Content-Disposition will be added.",
+                        hash
+                    );
+                    (
+                        [
+                            (header::CONTENT_TYPE, mime),
+                            (
+                                header::CONTENT_DISPOSITION,
+                                format!(
+                                    "attachment; filename=\"{}\"",
+                                    file.original_name.unwrap_or(file.name)
+                                ),
                             ),
-                        ),
-                    ],
-                    bytes,
-                )
-                    .into_response()
+                        ],
+                        bytes,
+                    )
+                        .into_response()
+                } else {
+                    ([(header::CONTENT_TYPE, mime)], bytes).into_response()
+                }
             } else {
                 debug!("Could not found valid file for hash '{}'.", hash);
                 (StatusCode::NOT_FOUND, "Not found").into_response()

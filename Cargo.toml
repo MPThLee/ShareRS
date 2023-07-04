@@ -60,6 +60,7 @@ sha2 = "0.10.7"
 uuid = { version = "1.4.0", features = ["v4", "serde"] }
 argon2 = "0.5.0"
 glob = "0.3.1"
+infer = "0.14.0"
 
 [build-dependencies]
 built = { version = "0.6.1", features = ["chrono", "semver", "git2"] }
