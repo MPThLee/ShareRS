@@ -1,0 +1,751 @@
+{
+  "db": "PostgreSQL",
+  "02555a5310ce67ffc419e9d258548ef236f5e34076901e09ffaa2d849692034b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "expires",
+          "ordinal": 2,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                t.id, t.user_id, t.expires, t.created_at\n            FROM \n                token t\n            WHERE \n                    t.id = $1\n                AND \n                    CURRENT_TIMESTAMP < COALESCE(t.expires, 'infinity')\n            "
+  },
+  "0d3a1d33ad5af64466e7796c0f771906aaa5cd423bf18cabb90e91c5637bd6c7": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO users (\n                username, password\n            )\n            VALUES (\n                $1, $2\n            )\n            RETURNING\n                id\n            "
+  },
+  "152658cb11c1c6ecd9431a80618b0e49fb24ab98fb2764ecc5664db63bd5511e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "count",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT \n                COUNT(*) AS count\n            FROM url\n            "
+  },
+  "1a90f997fe692c18ad308fac498d1035077ac8223a5db47330d93d971f0ada42": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "destination",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "views",
+          "ordinal": 3,
+          "type_info": "Int8"
+        },
+        {
+          "name": "max_views",
+          "ordinal": 4,
+          "type_info": "Int8"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 5,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 6,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                u.id, u.name, u.destination, u.views,\n                u.max_views, u.user_id, u.created_at\n            FROM \n                url u\n            WHERE \n                u.user_id = $1\n            "
+  },
+  "3e2f37621b2b2009a3775c986acd8ac224e6b27130bda9eddf873fc9525d0f3c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Int8",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO url (\n                name, destination, max_views, user_id\n            )\n            VALUES (\n                $1, $2, $3, $4\n            )\n            RETURNING\n                id\n            "
+  },
+  "466771ec352529d9490c1d985c6fd9858da83e33abd842400236d49cfeaaaa96": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "original_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "mime",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "views",
+          "ordinal": 4,
+          "type_info": "Int8"
+        },
+        {
+          "name": "max_views",
+          "ordinal": 5,
+          "type_info": "Int8"
+        },
+        {
+          "name": "is_processing",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 7,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 8,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                f.id, f.name, f.original_name, f.mime, f.views,\n                f.max_views, f.is_processing, f.user_id, f.created_at\n            FROM \n                files f\n            WHERE \n                f.id = ANY($1)\n            "
+  },
+  "558d083b7915c662324bb3d500f464f94f16eb30cba3d851175762745913f06b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          "Int8",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO files (\n                name, original_name, mime, max_views, user_id\n            )\n            VALUES (\n                $1, $2, $3, $4, $5\n            )\n            RETURNING\n                id\n            "
+  },
+  "59589592b17288415d35b200f39ba6a2a20dfef94998f4d709fc701dd26919f8": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            UPDATE files\n            SET\n                views = views + 1\n            WHERE\n                id = $1\n            "
+  },
+  "5be7e8f7121d900601decef873a99e8f38533cc54ca55901d28b3498e9e2af48": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Bool",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            UPDATE files\n            SET\n                is_processing = $1\n            WHERE\n                id = $2\n            "
+  },
+  "6278b15ed3af0ffd7df05e51726d8a1583b29f8703479f31be7a2c5a371b90ee": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "password",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "is_active",
+          "ordinal": 3,
+          "type_info": "Bool"
+        },
+        {
+          "name": "is_admin",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                u.id, u.username, u.password,\n                u.is_active, u.is_admin, u.created_at\n            FROM \n                users u\n            WHERE \n                u.id = ANY($1)\n            "
+  },
+  "7523250d17c8c98e798b64163159a11894242fe9ab1886e3f52b1d8a0548944a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "count",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT \n                COUNT(*)\n            FROM\n                files\n            "
+  },
+  "7559bd714b92088385e6a7b6080709f086efb9fffe35957eab3021f4867fd1ea": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "destination",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "views",
+          "ordinal": 3,
+          "type_info": "Int8"
+        },
+        {
+          "name": "max_views",
+          "ordinal": 4,
+          "type_info": "Int8"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 5,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 6,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                u.id, u.name, u.destination, u.views,\n                u.max_views, u.user_id, u.created_at\n            FROM \n                url u\n            WHERE \n                    u.name = $1\n                AND (\n                        u.max_views IS NULL\n                    OR\n                        u.views < COALESCE(u.max_views, '9223372036854775807'::bigint)\n                )\n            "
+  },
+  "7c35fdda5552188d031c7b43c6d8f4eca8429cb7eb562820ccbcd495e54d8548": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "expires",
+          "ordinal": 2,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                t.id, t.user_id, t.expires, t.created_at\n            FROM \n                token t\n            WHERE \n                t.user_id = $1\n            "
+  },
+  "7d095d00e6e0e13f0e3fc62abaa1e030ee8d7590a04602b3c056b51bf4afe150": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            UPDATE url\n            SET\n                views = views + 1\n            WHERE\n                id = $1\n            "
+  },
+  "812c50b783c5c916d64acd90f4ff90c9c561ae27ead72dc596074057c7a41b2f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "original_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "mime",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "views",
+          "ordinal": 4,
+          "type_info": "Int8"
+        },
+        {
+          "name": "max_views",
+          "ordinal": 5,
+          "type_info": "Int8"
+        },
+        {
+          "name": "is_processing",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 7,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 8,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                f.id, f.name, f.original_name, f.mime, f.views,\n                f.max_views, f.is_processing, f.user_id, f.created_at\n            FROM \n                files f\n            WHERE \n                f.user_id = $1\n            "
+  },
+  "8a3768d75cdf4215f8eefdc0a591aeb80eeb916a5a1e0ac864b11f9f7b5823eb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "expires",
+          "ordinal": 2,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                t.id, t.user_id, t.expires, t.created_at\n            FROM \n                token t\n            WHERE \n                t.id = ANY($1)\n            "
+  },
+  "8e4c40f01cbb9ca82ef3bda7b60ead40561472cb8d42e778737711e5ea223827": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "original_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "mime",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "views",
+          "ordinal": 4,
+          "type_info": "Int8"
+        },
+        {
+          "name": "max_views",
+          "ordinal": 5,
+          "type_info": "Int8"
+        },
+        {
+          "name": "is_processing",
+          "ordinal": 6,
+          "type_info": "Bool"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 7,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 8,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                f.id, f.name, f.original_name, f.mime, f.views,\n                f.max_views, f.is_processing, f.user_id, f.created_at\n            FROM \n                files f\n            WHERE \n                    f.name = $1\n                AND\n                    f.is_processing = false\n                AND (\n                    f.max_views IS NULL\n                OR\n                    f.views < COALESCE(f.max_views, '9223372036854775807'::bigint)\n                )\n            "
+  },
+  "acd3948931c7f9996e809853ec3e2ae35417116c260a486448992271324de2ce": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "destination",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "views",
+          "ordinal": 3,
+          "type_info": "Int8"
+        },
+        {
+          "name": "max_views",
+          "ordinal": 4,
+          "type_info": "Int8"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 5,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 6,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "UuidArray"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                u.id, u.name, u.destination, u.views,\n                u.max_views, u.user_id, u.created_at\n            FROM \n                url u\n            WHERE \n                u.id = ANY($1)\n            "
+  },
+  "bc6e71c4cf045c3e6803407bceee69a82436bebaa075fef66eae07b9d190941d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "username",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "password",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "is_active",
+          "ordinal": 3,
+          "type_info": "Bool"
+        },
+        {
+          "name": "is_admin",
+          "ordinal": 4,
+          "type_info": "Bool"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT \n                u.id, u.username, u.password,\n                u.is_active, u.is_admin, u.created_at\n            FROM \n                users u\n            WHERE \n                u.username = $1\n            "
+  },
+  "c673ee5877b982ac4f143f076ae866f9bf3f89da5254af13c41045906b3628b3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Timestamptz"
+        ]
+      }
+    },
+    "query": "\n            INSERT INTO token (\n                user_id, expires\n            )\n            VALUES (\n                $1, $2\n            )\n            RETURNING\n                id\n            "
+  }
+}
