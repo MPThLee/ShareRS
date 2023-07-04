@@ -28,10 +28,10 @@ pub struct UrlRequest {
 
 #[allow(dead_code)]
 impl Url {
-    pub async fn insert(
-        url: UrlRequest,
-        transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    ) -> Result<UrlId, DatabaseError> {
+    pub async fn insert<'a, E>(url: UrlRequest, executor: E) -> Result<UrlId, DatabaseError>
+    where
+        E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
+    {
         let ret = sqlx::query!(
             "
             INSERT INTO url (
@@ -48,7 +48,7 @@ impl Url {
             url.max_views,
             url.user_id.0
         )
-        .fetch_one(&mut *transaction)
+        .fetch_one(executor)
         .await?;
 
         Ok(UrlId(ret.id))

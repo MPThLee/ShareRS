@@ -24,6 +24,10 @@ pub async fn get_hash(
     Extension(storage): Extension<Arc<dyn Storage + Send + Sync>>,
     Extension(pool): Extension<PgPool>,
 ) -> Response {
+    if hash.contains("..") {
+        return (StatusCode::BAD_REQUEST, "Bad request").into_response();
+    }
+
     let path = StdPath::new(&hash);
 
     // Let's treat non-dot hases as url redirect, others are files.

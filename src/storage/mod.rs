@@ -28,8 +28,7 @@ pub struct UploadFileData {
 
 #[async_trait]
 pub trait Storage {
-    async fn put(&self, file_name: &str, file_bytes: Bytes)
-        -> Result<UploadFileData, StorageError>;
+    async fn put(&self, key: &str, bytes: Bytes) -> Result<UploadFileData, StorageError>;
 
     async fn delete(&self, key: &str) -> Result<(), StorageError>;
 

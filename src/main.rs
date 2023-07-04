@@ -1,15 +1,21 @@
 use std::sync::Arc;
 
 use anyhow::Context;
-use axum::{routing::get, Extension, Router};
+use axum::{
+    routing::{get, post},
+    Extension, Router,
+};
 use routes::{get_hash, index};
 
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::modules::template::init_template;
+use crate::{
+    modules::template::init_template, routes::api::v1::file::upload, routes::api::v1::url::create,
+};
 
+mod constraint;
 mod database;
 mod modules;
 mod routes;
@@ -63,6 +69,8 @@ async fn main() -> anyhow::Result<()> {
 
     // App handler
     let app = Router::new()
+        .route("/api/v1/file/upload", post(upload))
+        .route("/api/v1/url/create", post(create))
         .route("/", get(index))
         .route("/*hash", get(get_hash))
         .layer(Extension(template))

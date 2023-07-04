@@ -31,10 +31,10 @@ pub struct FileDbRequest {
 
 #[allow(dead_code)]
 impl File {
-    pub async fn insert(
-        file: FileDbRequest,
-        transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    ) -> Result<FileId, DatabaseError> {
+    pub async fn insert<'a, E>(file: FileDbRequest, executor: E) -> Result<FileId, DatabaseError>
+    where
+        E: sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
+    {
         let ret = sqlx::query!(
             "
             INSERT INTO files (
@@ -52,7 +52,7 @@ impl File {
             file.max_views,
             file.user_id.0
         )
-        .fetch_one(&mut *transaction)
+        .fetch_one(executor)
         .await?;
 
         Ok(FileId(ret.id))
