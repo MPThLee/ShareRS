@@ -1,0 +1,70 @@
+name: Docker
+
+on: 
+  push:
+    branches: 
+      - master
+    tags:
+      - v*
+
+jobs:
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Modify scripts and get version
+      id: version
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const date = new Date();
+          const year = date.getUTCFullYear();
+          const month = `${date.getUTCMonth()+1}`.padStart(2, '0');
+          const day = `${date.getUTCDate()}`.padStart(2, '0');
+          const hour = `${date.getUTCHours()}`.padStart(2, '0');
+          const minute = `${date.getUTCMinutes()}`.padStart(2, '0');
+          const d = `${year}-${month}-${day}T${hour}-${minute}`;
+
+          if (context.ref.startsWith("refs/tags/v")) {
+            core.setOutput('latest', 'latest');
+            core.setOutput('version', context.ref.substring(11));
+          } else {
+            core.setOutput('latest', 'nightly');
+            core.setOutput('version', `nightly-${d}-${context.sha.substring(0, 7)}`);
+          }
+          
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    # Docker Registry login
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # Build and push
+    - name: Build a multi-platform docker image and push (for master)
+      uses: docker/build-push-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64
+        cache-from: |
+          ghcr.io/mpthlee/sharers:latest
+          type=local,src=/tmp/.buildx-cache
+        cache-to: mode=max,type=inline
+        build-args: BUILD_VER=${{ steps.version.outputs.version }}
+        load: false
+        no-cache: ${{ contains(github.event.head_commit.message, '[no cache]') }}
+        tags: |
+          ghcr.io/mpthlee/sharers:${{ steps.version.outputs.latest }}
+          ghcr.io/mpthlee/sharers:${{ github.sha }}
+          ghcr.io/mpthlee/sharers:${{ steps.version.outputs.version }}

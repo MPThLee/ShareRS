@@ -1,0 +1,36 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DATABASE=postgres
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sharers:
+    image: ghcr.io/mpthlee/sharers
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
+    environment:
+      - BIND_ADDR=0.0.0.0:8080
+      - DATABASE_URL=postgres://postgress:postgress@192.168.1.124/postgress
+      - HOST_BASEURL=https://outside.url
+      - STORAGE_BACKEND=local
+      - LOCAL_FILE_PATH=/app/storage
+    volumes:
+      - './storage:/app/storage'
+      - './template:/app/template'
+    depends_on:
+      - 'postgres'
+
+volumes:
+  pg_data:

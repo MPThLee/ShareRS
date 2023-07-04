@@ -1,4 +1,4 @@
-use std::sync::Arc;
+#![forbid(unsafe_code)]
 
 use anyhow::Context;
 use axum::{
@@ -6,6 +6,7 @@ use axum::{
     Extension, Router,
 };
 use routes::{get_hash, index};
+use std::sync::Arc;
 
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
@@ -35,8 +36,13 @@ async fn main() -> anyhow::Result<()> {
     // Logging
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "sharers=debug,tower_http=debug,axum::rejection=trace".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                if built_info::PROFILE == "debug" {
+                    "app=debug,tower_http=debug,axum::rejection=trace".into()
+                } else {
+                    "app=info".into()
+                }
+            }),
         )
         .with(tracing_subscriber::fmt::layer().with_target(true).compact())
         .init();
