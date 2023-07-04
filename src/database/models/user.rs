@@ -4,7 +4,6 @@ use uuid::Uuid;
 
 use super::{ids::UserId, DatabaseError};
 
-#[serde_with::serde_as]
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
