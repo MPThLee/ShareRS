@@ -19,6 +19,6 @@ RUN cargo build --release --bin app
 
 FROM debian:bookworm-slim AS runtime
 WORKDIR app
-COPY --from=build /src/migrations/* /app/migrations
+COPY --from=builder /src/migrations/* /app/migrations
 COPY --from=builder /src/target/release/app /app/app
 CMD /app/app
