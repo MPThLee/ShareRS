@@ -22,18 +22,20 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const date = new Date();
-          const year = date.getUTCFullYear();
-          const month = `${date.getUTCMonth()+1}`.padStart(2, '0');
-          const day = `${date.getUTCDate()}`.padStart(2, '0');
-          const hour = `${date.getUTCHours()}`.padStart(2, '0');
-          const minute = `${date.getUTCMinutes()}`.padStart(2, '0');
-          const d = `${year}-${month}-${day}T${hour}-${minute}`;
+          core.setOutput('sha_version', `${context.ref.substring(10)}-${context.sha}`);
 
           if (context.ref.startsWith("refs/tags/v")) {
             core.setOutput('latest', 'latest');
             core.setOutput('version', context.ref.substring(11));
           } else {
+            const date = new Date();
+            const year = date.getUTCFullYear();
+            const month = `${date.getUTCMonth()+1}`.padStart(2, '0');
+            const day = `${date.getUTCDate()}`.padStart(2, '0');
+            const hour = `${date.getUTCHours()}`.padStart(2, '0');
+            const minute = `${date.getUTCMinutes()}`.padStart(2, '0');
+            const d = `${year}-${month}-${day}T${hour}-${minute}`;
+
             core.setOutput('latest', 'nightly');
             core.setOutput('version', `nightly-${d}-${context.sha.substring(0, 7)}`);
           }
@@ -75,9 +77,10 @@ jobs:
         build-args: BUILD_VER=${{ steps.version.outputs.version }}
         load: false
         no-cache: ${{ contains(github.event.head_commit.message, '[no cache]') }}
+        push: ${{ github.repository_owner == 'MPThLee' }}
         tags: |
           ghcr.io/mpthlee/sharers:${{ steps.version.outputs.latest }}
-          ghcr.io/mpthlee/sharers:${{ github.sha }}
+          ghcr.io/mpthlee/sharers:${{ steps.version.outputs.sha_version }}
           ghcr.io/mpthlee/sharers:${{ steps.version.outputs.version }}
 
     - # Temp fix
