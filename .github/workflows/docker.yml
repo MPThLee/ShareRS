@@ -26,7 +26,7 @@ jobs:
 
           if (context.ref.startsWith("refs/tags/v")) {
             core.setOutput('latest', 'latest');
-            core.setOutput('version', context.ref.substring(11));
+            core.setOutput('version', context.ref.slice(context.ref.lastIndexOf("/v") + 2));
           } else {
             const date = new Date();
             const year = date.getUTCFullYear();
