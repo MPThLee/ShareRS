@@ -22,7 +22,7 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          core.setOutput('sha_version', `${context.ref.substring(10)}-${context.sha}`);
+          core.setOutput('sha_version', `${context.ref.slice(context.ref.lastIndexOf("/") + 1)}-${context.sha}`);
 
           if (context.ref.startsWith("refs/tags/v")) {
             core.setOutput('latest', 'latest');
