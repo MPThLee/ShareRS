@@ -1,9 +1,9 @@
 FROM rust:1-bookworm AS chef 
+RUN cargo install cargo-chef
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates build-essential git \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
-RUN cargo install cargo-chef 
 WORKDIR src
 
 FROM chef AS planner

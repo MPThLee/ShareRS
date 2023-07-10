@@ -66,13 +66,14 @@ jobs:
     - name: Build a multi-platform docker image and push (for master)
       uses: docker/build-push-action@v3
       with:
+        context: .
+        file: ./Dockerfile
         platforms: linux/amd64,linux/arm64,linux/arm/v7
         cache-from: |
           type=local,src=/tmp/.buildx-cache
         cache-to: |
           type=inline
           type=local,dest=/tmp/.buildx-cache-new,mode=max
-        build-args: BUILD_VER=${{ steps.version.outputs.version }}
         load: false
         no-cache: ${{ contains(github.event.head_commit.message, '[no cache]') }}
         push: ${{ github.repository_owner == 'MPThLee' }}
