@@ -21,7 +21,7 @@ FROM debian:bookworm-slim AS runtime
 
 # Update Ca Certificates
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates \
+ && apt-get install -y --no-install-recommends ca-certificates tini \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -30,4 +30,6 @@ RUN update-ca-certificates
 WORKDIR app
 COPY --from=builder /src/migrations/* /app/migrations
 COPY --from=builder /src/target/release/app /app/app
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD /app/app
