@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
     environment:
       - BIND_ADDR=0.0.0.0:8080
-      - DATABASE_URL=postgres://postgress:postgress@192.168.1.124/postgress
+      - DATABASE_URL=postgres://postgres:postgres@postgres/postgres
       - HOST_BASEURL=https://outside.url
       - STORAGE_BACKEND=local
       - LOCAL_FILE_PATH=/app/storage
