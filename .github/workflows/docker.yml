@@ -69,8 +69,6 @@ jobs:
         platforms: linux/amd64,linux/arm64,linux/arm/v7
         cache-from: |
           type=local,src=/tmp/.buildx-cache
-          ghcr.io/mpthlee/sharers:nightly
-          ghcr.io/mpthlee/sharers:latest
         cache-to: |
           type=inline
           type=local,dest=/tmp/.buildx-cache-new,mode=max
