@@ -1,14 +1,11 @@
 # Rust, Stable, With bookworm
-FROM rust:1-bookworm AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-1-bookworm AS chef
 
 # Install build-time dependencies
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates build-essential git \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
-
-# Install cargo chef that isn't present in arm/v7
-RUN cargo install cargo-chef
 
 WORKDIR src
 
